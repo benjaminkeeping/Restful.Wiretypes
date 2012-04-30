@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Restful.Wiretypes</id>
-    <version>1.0.0.4</version>
+    <version>1.0.0.5</version>
     <authors>Ben Keeping</authors>
     <owners>Ben Keeping</owners>
     <projectUrl>http://github.com/benjaminkeeping/Restful.Wiretypes</projectUrl>
