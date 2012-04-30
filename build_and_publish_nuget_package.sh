@@ -1,18 +1,24 @@
 #!/bin/bash
 
 # project vars
+project_name="Restful.Wiretypes"
 nuget='./tools/nuget.exe'
 msbuild='/c/Windows/Microsoft.NET/Framework/v4.0.30319/msbuild.exe'
-project_src_dir='./src/Restful.Wiretypes'
+project_src_dir="./src/${project_name}"
 build_mode='Release'
 project_output_dir="$project_src_dir/bin/$build_mode"
 build_dir="./build"
 package_output_dir="./deploy"
-package_spec_file="$build_dir/Package.nuspec"
+package_spec_file="./Package.nuspec"
 build_log="$build_dir/build_log.txt"
 
+rm -rf $build_dir
+mkdir -p ${build_dir}/lib/net40
+rm -rf $package_output_dir
+mkdir $package_output_dir
+
 # build project
-$msbuild $project_src_dir/Restful.Wiretypes.csproj /property:Configuration=$build_mode > $build_log
+$msbuild $project_src_dir/${project_name}.csproj /property:Configuration=$build_mode > $build_log
 
 errors=`cat $build_log | grep -i "Build FAILED"`
 if [ "" != "${errors}" ]
@@ -33,14 +39,10 @@ then
  newversion=$suggestedVersion
 fi
 echo "Using $newversion"
-sed -i -e s/\<version\>[0-9]*.[0-9]*.[0-9]*.[0-9]*\</\<version\>$newversion\</ $package_spec_file
+cat $package_spec_file | sed s/\<version\>[0-9]*.[0-9]*.[0-9]*.[0-9]*\</\<version\>$newversion\</ > tmp.nuspec
+mv tmp.nuspec $package_spec_file
 
-# copy dlls to lib dir
-mkdir -p ./build/lib/net40
-cp $project_output_dir/Restful.Wriretypes.dll $build_dir/lib/net40
+cp $project_output_dir/${project_name}.dll $build_dir/lib/net40
+cp $package_spec_file $build_dir
 
-# package
-$nuget pack $package_spec_file -OutputDirectory $package_output_dir
-
-# push to gallery (requires api key is set on command line)
-$nuget push $package_output_dir/Restful.Wiretypes.$newversion.nupkg
+$nuget pack ${build_dir}/${package_spec_file} -OutputDirectory $package_output_dir
