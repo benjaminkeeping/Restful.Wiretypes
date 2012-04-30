@@ -46,3 +46,6 @@ cp $project_output_dir/${project_name}.dll $build_dir/lib/net40
 cp $package_spec_file $build_dir
 
 $nuget pack ${build_dir}/${package_spec_file} -OutputDirectory $package_output_dir
+
+# push to gallery (requires api key is set on command line)
+$nuget push $package_output_dir/${project_name}.$newversion.nupkg
