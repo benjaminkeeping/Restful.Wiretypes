@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Error.cs" />
     <Compile Include="Field.cs" />
+    <Compile Include="GroupOf.cs" />
     <Compile Include="Link.cs" />
     <Compile Include="Page.cs" />
     <Compile Include="PageInfo.cs" />
