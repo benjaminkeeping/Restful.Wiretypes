@@ -16,7 +16,7 @@ namespace Restful.Wiretypes
 
         public static Field<T> From<T>(T value, bool editable, List<T> options)
         {
-            return Field<T>.From(value, editable, true, new List<T>());
+            return Field<T>.From(value, editable, true, options);
         }
 
         public static Field<T> From(T value, bool editable)
