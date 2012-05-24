@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 
 namespace Restful.Wiretypes
 {
@@ -44,7 +45,16 @@ namespace Restful.Wiretypes
 
         static string StripPagingInfoFrom(string pathAndQuery)
         {
-            return string.Join("?", pathAndQuery.Split(new[] { '?', '&' }).Where(x => !x.StartsWith("page=") && !x.StartsWith("size=")));
+            var parts = pathAndQuery.Split(new[] {'?', '&'}).Where(x => !x.StartsWith("page=") && !x.StartsWith("size="));
+            var s = new StringBuilder();
+            var sep = '?';
+            foreach (var part in parts)
+            {
+                s.Append(part);
+                s.Append(sep);
+                sep = '&';
+            }
+            return s.ToString().Substring(0, s.Length -1);
         }
 
         public string FormatNext(string baseUrl)
