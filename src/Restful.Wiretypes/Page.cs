@@ -7,18 +7,25 @@ namespace Restful.Wiretypes
 {
     public class Page<T>
     {
+        const int NumberOfPagesToShow = 10;
+        const int StartPageScrollingOn = 6;
+        const int PageBuffer = 5;
+
+        readonly string _pathAndQuery;
+        readonly string _querySeperator;
+
         public Page()
             : this(0, 0, 0, 0, "", "", new List<T>())
         {
             Links = new List<Link>();
-        }
+        }        
 
         public IList<Link> Links { get; set; }
         public Page(int currentPage, int totalItems, int totalPages, int pageSize, string query, string pathAndQuery, IEnumerable<T> items)
         {
             Links = new List<Link>();
-            pathAndQuery = StripPagingInfoFrom(pathAndQuery);
-            var querySeperator = pathAndQuery.Contains("?") ? "&" : "?";
+            _pathAndQuery = StripPagingInfoFrom(pathAndQuery);
+            _querySeperator = _pathAndQuery.Contains("?") ? "&" : "?";
             PageInfo = new PageInfo
             {
                 Query = query,
@@ -30,17 +37,48 @@ namespace Restful.Wiretypes
                 IsFirstPage = currentPage == 1,
                 Next = currentPage == totalPages || currentPage > totalPages ? currentPage : currentPage + 1,
                 Previous = currentPage == 1 ? currentPage : currentPage - 1,
-                PageNumbers = Enumerable.Range(1, totalPages).ToList() /* do not remove the ToList() - causes JsonConvert to barf */
+                PageNumbers = Enumerable.Range(1, totalPages).ToList()
+                /* do not remove the ToList() - causes JsonConvert to barf */
             };
             Items = items;
 
-            Links.Add(new Link { Title = "self", Href = string.Format("{0}{1}page={2}&size={3}", pathAndQuery, querySeperator, CurrentPage, PageSize) });
-            Links.Add(Link.From("<<", string.Format("{0}{1}page={2}&size={3}", pathAndQuery, querySeperator, Previous, PageSize), false, PageInfo.IsFirstPage));
-            foreach (var pageNumber in PageInfo.PageNumbers)
+            Links.Add(new Link
             {
-                Links.Add(Link.From(pageNumber.ToString(), string.Format("{0}{1}page={2}&size={3}", pathAndQuery, querySeperator, pageNumber, PageSize), pageNumber == PageInfo.CurrentPage, false));
+                Title = "self",
+                Href = string.Format("{0}{1}page={2}&size={3}", _pathAndQuery, _querySeperator, CurrentPage, PageSize)
+            });
+
+
+            Links.Add(Link.From("<<",
+                                string.Format("{0}{1}page={2}&size={3}", _pathAndQuery, _querySeperator, 1,
+                                              PageSize), false, PageInfo.IsFirstPage));
+
+            Links.Add(Link.From("<",
+                                string.Format("{0}{1}page={2}&size={3}", _pathAndQuery, _querySeperator, Previous,
+                                              PageSize), false, PageInfo.IsFirstPage));
+
+            if (CurrentPage <= StartPageScrollingOn) 
+                FormatPaging(1);
+            else
+                FormatPaging(CurrentPage - PageBuffer);
+        }
+
+        public void FormatPaging(int startPage)
+        {
+            for (var i = startPage; i < startPage + NumberOfPagesToShow; i++)
+            {
+                if (i > TotalPages)
+                    break;
+
+                Links.Add(Link.From(i.ToString(),
+                                    string.Format("{0}{1}page={2}&size={3}", _pathAndQuery, _querySeperator, i, PageSize),
+                                    i == PageInfo.CurrentPage, false));
             }
-            Links.Add(Link.From(">>", string.Format("{0}{1}page={2}&size={3}", pathAndQuery, querySeperator, Next, PageSize), false, PageInfo.IsLastPage));
+
+            Links.Add(Link.From(">", string.Format("{0}{1}page={2}&size={3}", _pathAndQuery, _querySeperator, Next, PageSize),
+                                false, PageInfo.IsLastPage));
+            Links.Add(Link.From(">>", string.Format("{0}{1}page={2}&size={3}", _pathAndQuery, _querySeperator, TotalPages,PageSize), 
+                                false, PageInfo.IsLastPage));
         }
 
         static string StripPagingInfoFrom(string pathAndQuery)
@@ -55,7 +93,7 @@ namespace Restful.Wiretypes
                 sep = '&';
             }
             return s.ToString().Substring(0, s.Length -1);
-        }
+        }        
 
         public string FormatNext(string baseUrl)
         {
