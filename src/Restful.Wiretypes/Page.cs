@@ -7,8 +7,8 @@ namespace Restful.Wiretypes
 {
     public class Page<T>
     {
-        const int StartPageScrollingOn = 6;
-        const int PageBuffer = 5;
+        readonly int _paginationSize;
+        readonly int _startPaginationScrollingOn;
 
         readonly string _pathAndQuery;
         readonly string _querySeperator;
@@ -21,6 +21,10 @@ namespace Restful.Wiretypes
 
         public IList<Link> Links { get; set; }
         public Page(int currentPage, int totalItems, int totalPages, int pageSize, string query, string pathAndQuery, IEnumerable<T> items)
+            : this(currentPage, totalItems, totalPages, pageSize, 10, query, pathAndQuery, items) 
+        {}
+
+        public Page(int currentPage, int totalItems, int totalPages, int pageSize, int paginationSize, string query, string pathAndQuery, IEnumerable<T> items)
         {
             Links = new List<Link>();
             _pathAndQuery = StripPagingInfoFrom(pathAndQuery);
@@ -39,6 +43,10 @@ namespace Restful.Wiretypes
                 PageNumbers = Enumerable.Range(1, totalPages).ToList()
                 /* do not remove the ToList() - causes JsonConvert to barf */
             };
+
+            _paginationSize = paginationSize;
+            _startPaginationScrollingOn = _paginationSize/2;
+
             Items = items;
 
             Links.Add(new Link
@@ -56,15 +64,15 @@ namespace Restful.Wiretypes
                                 string.Format("{0}{1}page={2}&size={3}", _pathAndQuery, _querySeperator, Previous,
                                               PageSize), false, PageInfo.IsFirstPage));
 
-            if (CurrentPage <= StartPageScrollingOn) 
+            if (CurrentPage <= _startPaginationScrollingOn) 
                 FormatPaging(1);
             else
-                FormatPaging(CurrentPage - PageBuffer);
+                FormatPaging(CurrentPage - _startPaginationScrollingOn);
         }
 
         public void FormatPaging(int startPage)
         {
-            for (var i = startPage; i < startPage + PageSize; i++)
+            for (var i = startPage; i < startPage + _paginationSize; i++)
             {
                 if (i > TotalPages)
                     break;
