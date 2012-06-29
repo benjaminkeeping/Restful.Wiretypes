@@ -7,7 +7,6 @@ namespace Restful.Wiretypes
 {
     public class Page<T>
     {
-        const int NumberOfPagesToShow = 10;
         const int StartPageScrollingOn = 6;
         const int PageBuffer = 5;
 
@@ -65,7 +64,7 @@ namespace Restful.Wiretypes
 
         public void FormatPaging(int startPage)
         {
-            for (var i = startPage; i < startPage + NumberOfPagesToShow; i++)
+            for (var i = startPage; i < startPage + PageSize; i++)
             {
                 if (i > TotalPages)
                     break;
