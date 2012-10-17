@@ -9,6 +9,7 @@ namespace Restful.Wiretypes
             Items = new List<T>();
         }
         public string GroupName { get; set; }
+        public string GroupId { get; set; }
         public List<T> Items { get; set; }
 
         public void Add(T item)

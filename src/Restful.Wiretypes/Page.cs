@@ -64,7 +64,7 @@ namespace Restful.Wiretypes
 
         public void FormatPaging(int startPage)
         {
-            for (var i = startPage; i < startPage + PageSize; i++)
+            for (var i = 1; i < startPage + PageSize; i++)
             {
                 if (i > TotalPages)
                     break;
