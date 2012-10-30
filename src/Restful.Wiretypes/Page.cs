@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -7,8 +8,6 @@ namespace Restful.Wiretypes
 {
     public class Page<T>
     {
-        const int StartPageScrollingOn = 6;
-        const int PageBuffer = 5;
 
         readonly string _pathAndQuery;
         readonly string _querySeperator;
@@ -22,6 +21,10 @@ namespace Restful.Wiretypes
         public IList<Link> Links { get; set; }
         public Page(int currentPage, int totalItems, int totalPages, int pageSize, string query, string pathAndQuery, IEnumerable<T> items)
         {
+            if (pageSize % 2 != 0)
+            {
+                throw new Exception(string.Format("You must reguest a page size that is an even number: {0} is not an even number", pageSize));
+            }
             Links = new List<Link>();
             _pathAndQuery = StripPagingInfoFrom(pathAndQuery);
             _querySeperator = _pathAndQuery.Contains("?") ? "&" : "?";
@@ -56,15 +59,24 @@ namespace Restful.Wiretypes
                                 string.Format("{0}{1}page={2}&size={3}", _pathAndQuery, _querySeperator, Previous,
                                               PageSize), false, PageInfo.IsFirstPage));
 
-            if (CurrentPage <= StartPageScrollingOn) 
-                FormatPaging(1);
+            var halfPageSize = PageSize / 2;
+            if (CurrentPage <= PageSize)
+            {
+                FormatPaging(1, PageSize + 1);
+            }
+            else if ((CurrentPage + halfPageSize) > TotalPages)
+            {
+                FormatPaging(TotalPages - PageSize, TotalPages + 1);
+            }
             else
-                FormatPaging(CurrentPage - PageBuffer);
+            {
+                FormatPaging(CurrentPage - halfPageSize, CurrentPage + halfPageSize);
+            }
         }
 
-        public void FormatPaging(int startPage)
+        public void FormatPaging(int startPage, int endPage)
         {
-            for (var i = 1; i < startPage + PageSize; i++)
+            for (var i = startPage; i < endPage; i++)
             {
                 if (i > TotalPages)
                     break;
