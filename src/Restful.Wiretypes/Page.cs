@@ -66,7 +66,7 @@ namespace Restful.Wiretypes
             }
             else if ((CurrentPage + halfPageSize) > TotalPages)
             {
-                FormatPaging(TotalPages - PageSize, TotalPages + 1);
+                FormatPaging(TotalPages - PageSize + 1, TotalPages + 1);
             }
             else
             {
