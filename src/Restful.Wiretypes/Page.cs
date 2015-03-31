@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -90,7 +91,10 @@ namespace Restful.Wiretypes
 
         static string StripPagingInfoFrom(string pathAndQuery)
         {
-            var parts = pathAndQuery.Split(new[] {'?', '&'}).Where(x => !x.StartsWith("page=") && !x.StartsWith("size="));
+            var parts = pathAndQuery.Split(new[] { '?', '&' })
+                .Where(x => !x.StartsWith("page=", true, CultureInfo.InvariantCulture)
+                         && !x.StartsWith("size=", true, CultureInfo.InvariantCulture));
+
             var s = new StringBuilder();
             var sep = '?';
             foreach (var part in parts)
